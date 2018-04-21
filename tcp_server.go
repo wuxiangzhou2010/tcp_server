@@ -17,7 +17,7 @@ type server struct {
 	address                  string // Address to open connection: localhost:9999
 	onNewClientCallback      func(c *Client)
 	onClientConnectionClosed func(c *Client, err error)
-	onNewMessage             func(c *Client, message []byte, len int)
+	onNewMessage             func(c *Client, message []byte)
 }
 
 // Read client data from channel
@@ -32,7 +32,7 @@ func (c *Client) listen() {
 			c.Server.onClientConnectionClosed(c, err)
 			return
 		}
-		c.Server.onNewMessage(c, buffer[:len], len)
+		c.Server.onNewMessage(c, buffer[:len])
 	}
 }
 
@@ -69,7 +69,7 @@ func (s *server) OnClientConnectionClosed(callback func(c *Client, err error)) {
 }
 
 // Called when Client receives new message
-func (s *server) OnNewMessage(callback func(c *Client, message []byte, len int)) {
+func (s *server) OnNewMessage(callback func(c *Client, message []byte)) {
 	s.onNewMessage = callback
 }
 
@@ -87,6 +87,7 @@ func (s *server) Listen() {
 			conn:   conn,
 			Server: s,
 		}
+
 		s.onNewClientCallback(client)
 		go client.listen()
 
@@ -101,7 +102,7 @@ func New(address string) *server {
 	}
 
 	server.OnNewClient(func(c *Client) {})
-	server.OnNewMessage(func(c *Client, message []byte, len int) {})
+	server.OnNewMessage(func(c *Client, message []byte) {})
 	server.OnClientConnectionClosed(func(c *Client, err error) {})
 
 	return server

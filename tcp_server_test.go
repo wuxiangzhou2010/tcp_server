@@ -23,13 +23,14 @@ func Test_accepting_new_client_callback(t *testing.T) {
 	server.OnNewClient(func(c *Client) {
 		newClient = true
 	})
-	server.OnNewMessage(func(c *Client, message []byte, len int) {
+	server.OnNewMessage(func(c *Client, message []byte) {
 		messageReceived = true
 		messageText = message
 		c.Send("received")
 		c.SendBytes([]byte("received"))
-		c.Close()
 		c.Conn()
+		c.Close()
+
 	})
 	server.OnClientConnectionClosed(func(c *Client, err error) {
 		connectinClosed = true
